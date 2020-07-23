@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lulu_expenses/widgets/chart.dart';
 
 import './widgets/new_transaction_input.dart';
 import './widgets/transaction_list.dart';
@@ -13,10 +14,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'LuLu Expns',
+      title: 'LuLu XPNS',
       theme: ThemeData(
-        primarySwatch: Colors.pink,
-        accentColor: Colors.pinkAccent,
+        primarySwatch: Colors.purple,
+        accentColor: Colors.amber,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Quicksand',
         textTheme: ThemeData.light().textTheme.copyWith(
@@ -28,15 +29,19 @@ class MyApp extends StatelessWidget {
             ),
         appBarTheme: AppBarTheme(
           textTheme: ThemeData.light().textTheme.copyWith(
-                headline6: TextStyle(
-                  fontFamily: 'OpenSans',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20.0,
-                ),
+              subtitle1: TextStyle(
+                fontFamily: 'OpenSans',
+                fontWeight: FontWeight.bold,
+                fontSize: 20.0,
               ),
+              button: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'OpenSans',
+              )),
         ),
       ),
-      home: MyHomePage(title: 'LuLu Expenses'),
+      home: MyHomePage(title: 'LuLu XPNS'),
     );
   }
 }
@@ -52,41 +57,58 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _userTransactions = [
-//    Transaction(
-//      id: 't1',
-//      title: 'Gas Refill',
-//      amount: 1000.0,
-//      date: DateTime.now(),
-//    ),
-//    Transaction(
-//      id: 't2',
-//      title: 'Salah Chicken',
-//      amount: 2500.0,
-//      date: DateTime.now(),
-//    ),
-//    Transaction(
-//      id: 't3',
-//      title: 'Family outing',
-//      amount: 20000.0,
-//      date: DateTime.now(),
-//    ),
-//    Transaction(
-//      id: 't4',
-//      title: 'New Shoes',
-//      amount: 10000.0,
-//      date: DateTime.now(),
-//    ),
+    Transaction(
+      id: DateTime.now().toString(),
+      title: 'Gas Refill',
+      amount: 1000.0,
+      date: DateTime.now(),
+    ),
+    Transaction(
+      id: DateTime.now().toString(),
+      title: 'Salah Chicken',
+      amount: 2500.0,
+      date: DateTime.now(),
+    ),
+    Transaction(
+      id: DateTime.now().toString(),
+      title: 'Family outing',
+      amount: 20000.0,
+      date: DateTime.now(),
+    ),
+    Transaction(
+      id: DateTime.now().toString(),
+      title: 'New Shoes',
+      amount: 10000.0,
+      date: DateTime.now(),
+    ),
   ];
+
+  List<Transaction> get _recentTransaction {
+    return _userTransactions.where((tx) {
+      return tx.date.isAfter(
+        DateTime.now().subtract(
+          Duration(days: 7),
+        ),
+      );
+    }).toList();
+  }
+
   //void method to add new transaction input
-  void _addNewTransaction(String txtTitle, double txtAmount) {
+  void _addNewTransaction(String txtTitle, double txtAmount, DateTime chosenDate,) {
     final newTransaction = Transaction(
       title: txtTitle,
       amount: txtAmount,
-      date: DateTime.now(),
+      date:chosenDate,
       id: DateTime.now().toString(),
     );
     setState(() {
       _userTransactions.add(newTransaction);
+    });
+  }
+  
+  void _deleteTransaction(String id){
+    setState(() {
+      _userTransactions.removeWhere((tx) => tx.id == id);
     });
   }
 
@@ -103,7 +125,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(
+          widget.title,
+          style: Theme.of(context).textTheme.subtitle1,
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -114,19 +139,8 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
-              padding: EdgeInsets.all(8.0),
-              width: double.infinity,
-              height: 40.0,
-              child: Card(
-                elevation: 5.0,
-                color: Colors.yellow,
-                child: Text(
-                  'Chart Section',
-                ),
-              ),
-            ),
-            TransactionList(_userTransactions),
+            Chart(_recentTransaction),
+            TransactionList(_userTransactions, _deleteTransaction),
           ],
         ),
       ),
