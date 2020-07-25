@@ -52,12 +52,16 @@ class _NewTransactionInputState extends State<NewTransactionInput> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 8.0),
+    return SingleChildScrollView(
       child: Card(
         elevation: 5,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.only(
+            left: 10.0,
+            top: 10.0,
+            right: 10.0,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 10.0,
+          ),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,

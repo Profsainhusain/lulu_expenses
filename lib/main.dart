@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lulu_expenses/widgets/chart.dart';
 
 import './widgets/new_transaction_input.dart';
@@ -6,6 +7,12 @@ import './widgets/transaction_list.dart';
 import './model/transaction.dart';
 
 void main() {
+  //set fixed orientation
+//  WidgetsFlutterBinding.ensureInitialized();
+//  SystemChrome.setPreferredOrientations([
+//    DeviceOrientation.portraitUp,
+//    DeviceOrientation.portraitDown,
+//  ]);
   runApp(MyApp());
 }
 
@@ -83,6 +90,8 @@ class _MyHomePageState extends State<MyHomePage> {
     ),
   ];
 
+  bool _showChart = false;
+
   List<Transaction> get _recentTransaction {
     return _userTransactions.where((tx) {
       return tx.date.isAfter(
@@ -94,19 +103,23 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //void method to add new transaction input
-  void _addNewTransaction(String txtTitle, double txtAmount, DateTime chosenDate,) {
+  void _addNewTransaction(
+    String txtTitle,
+    double txtAmount,
+    DateTime chosenDate,
+  ) {
     final newTransaction = Transaction(
       title: txtTitle,
       amount: txtAmount,
-      date:chosenDate,
+      date: chosenDate,
       id: DateTime.now().toString(),
     );
     setState(() {
       _userTransactions.add(newTransaction);
     });
   }
-  
-  void _deleteTransaction(String id){
+
+  void _deleteTransaction(String id) {
     setState(() {
       _userTransactions.removeWhere((tx) => tx.id == id);
     });
@@ -123,24 +136,65 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: Theme.of(context).textTheme.subtitle1,
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => _startAddNewTransaction(context),
-          )
-        ],
+    //checking the device orientation
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscapeMode = mediaQuery.orientation == Orientation.landscape;
+    final appBar = AppBar(
+      title: Text(
+        widget.title,
+        style: Theme.of(context).textTheme.subtitle1,
       ),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: () => _startAddNewTransaction(context),
+        )
+      ],
+    );
+    final transactionListWidget = Container(
+      height: (mediaQuery.size.height -
+              appBar.preferredSize.height -
+              MediaQuery.of(context).padding.top) *
+          0.7,
+      child: TransactionList(_userTransactions, _deleteTransaction),
+    );
+    return Scaffold(
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Chart(_recentTransaction),
-            TransactionList(_userTransactions, _deleteTransaction),
+            if (isLandscapeMode)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Show Chart'),
+                  Switch(
+                      value: _showChart,
+                      onChanged: (val) {
+                        setState(() {
+                          _showChart = val;
+                        });
+                      })
+                ],
+              ),
+            if (!isLandscapeMode)
+              Container(
+                height: (mediaQuery.size.height -
+                        appBar.preferredSize.height -
+                        mediaQuery.padding.top) *
+                    0.3,
+                child: Chart(_recentTransaction),
+              ),
+            if (!isLandscapeMode) transactionListWidget,
+            _showChart
+                ? Container(
+                    height: (mediaQuery.size.height -
+                            appBar.preferredSize.height -
+                            mediaQuery.padding.top) *
+                        0.7,
+                    child: Chart(_recentTransaction),
+                  )
+                : transactionListWidget,
           ],
         ),
       ),
